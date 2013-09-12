@@ -25,7 +25,7 @@ io.sockets.on('connection', function (socket) {
 		
 		db.get(dataPath, function(err, value) {
 			if (err) value = {};
-			socket.emit('data', {
+			subscriptions[id][dataPath].emit('data', {
 				path: dataPath,
 				value: value
 			});
