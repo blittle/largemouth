@@ -3,7 +3,7 @@ _ = require('lodash');
 
 // 1) Create our database, supply location and options.
 //    This will create or open the underlying LevelDB store.
-var db = levelup('./mydb')
+var db = levelup('./mydb', { valueEncoding: 'json' });
 
 var io = require('socket.io').listen(3000);
 
