@@ -26,7 +26,7 @@ if(parsed.help) {
 var Socket = require("../src/socket");
 var InMemory = require("../src/db/memory");
 
-var dbPath = parsed.database === 'leveldb' ? '../src/db/levelup' : '../src/db/memory';
+var dbPath = parsed.database === 'leveldb' ? '../src/db/leveldb' : '../src/db/memory';
 
 var dbInstance = new (require(dbPath))();
 

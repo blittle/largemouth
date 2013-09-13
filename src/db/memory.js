@@ -34,3 +34,4 @@ var InMemory = (function () {
 
 module.exports = InMemory;
 
+//# sourceMappingURL=memory.js.map

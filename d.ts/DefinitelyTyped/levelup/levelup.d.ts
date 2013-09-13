@@ -29,7 +29,7 @@ interface LevelUp {
 
 declare module "levelup" {
 
-    function levelup(hostname: string): LevelUp;
+    function levelup(hostname: string, options?: {createIfMissing?: boolean; errorIfExists?: boolean; compression?: boolean; cacheSize?: number; keyEncoding?: string; valueEncoding?: string; db?: string}): LevelUp;
     
     export = levelup;
 }
