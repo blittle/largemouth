@@ -6,9 +6,9 @@ import socketio = require('socket.io');
 
 import subscriptions = require('subscriptions');
 
-var start = function(db: dbInterface) {
+var start = function(db: dbInterface, port: number) {
 
-	var io = socketio.listen(3000);
+	var io = socketio.listen(port);
 
 	io.sockets.on('connection', (socket: Socket) => {
 		var id = _.uniqueId('c');

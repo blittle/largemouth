@@ -1,21 +1,21 @@
 {
-	"name": "largemouth",
-	"version": "0.0.0",
-	"description": "",
-	"main": "app.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepublish": "node node_modules/.bin/tsc  --module 'commonjs' src/*.ts app.ts"
-	},
-	"author": "Bret Little",
-	"license": "MIT",
-	"dependencies": {
-		"level": "~0.16.0",
-		"socket.io": "~0.9.16",
-		"lodash": "~1.3.1",
-		"typescript": "~0.9.1-1"
-	},
-	"bin": {
-		"largemouth": "app.js"
-	}
+  "name": "largemouth",
+  "version": "0.0.0",
+  "description": "",
+  "bin": {
+    "largemouth": "bin/largemouth.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "node node_modules/.bin/tsc  --module 'commonjs' src/*.ts app.ts"
+  },
+  "author": "Bret Little",
+  "license": "MIT",
+  "preferGlobal": true,
+  "dependencies": {
+    "socket.io": "~0.9.16",
+    "lodash": "~1.3.1",
+    "typescript": "~0.9.1-1",
+    "nopt": "~2.1.2"
+  }
 }
