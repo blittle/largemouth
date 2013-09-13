@@ -7,6 +7,9 @@ lib-cov
 *.pid
 *.gz
 *.iml
+*.js.map
+src/*.js
+app.js
 
 pids
 logs

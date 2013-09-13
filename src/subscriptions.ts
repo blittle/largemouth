@@ -1,0 +1,5 @@
+var subscriptions = {
+
+};
+
+export = subscriptions;
