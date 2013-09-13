@@ -7,7 +7,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "node node_modules/.bin/tsc  --module 'commonjs' src/*.ts app.ts"
+    "prepublish": "node node_modules/.bin/tsc  --module 'commonjs' src/*.ts src/db/*.ts"
   },
   "author": "Bret Little",
   "license": "MIT",
