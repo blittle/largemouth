@@ -34,4 +34,4 @@ var InMemory = (function () {
 
 module.exports = InMemory;
 
-//# sourceMappingURL=file:////home/blittle/dev/largemouth/src/db/memory.js.map
+//# sourceMappingURL=memory.js.map

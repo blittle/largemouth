@@ -30,5 +30,5 @@ var dbPath = parsed.database === 'leveldb' ? '../src/db/leveldb' : '../src/db/me
 
 var dbInstance = new (require(dbPath))();
 
-Socket(dbInstance, (parsed.port || 3000) );
+Socket(dbInstance, parsed);
 

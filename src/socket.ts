@@ -1,14 +1,16 @@
 ///<reference path="../d.ts/DefinitelyTyped/socket.io/socket.io.d.ts"/>
 ///<reference path="../d.ts/DefinitelyTyped/underscore/underscore.d.ts"/>
+
 import _ = require('lodash');
 import dbInterface = require('db/db');
 import socketio = require('socket.io');
+import ServerOptions = require('ServerOptions');
 
 import subscriptions = require('subscriptions');
 
-var start = function(db: dbInterface, port: number) {
+var start = function(db: dbInterface, options: ServerOptions) {
 
-	var io = socketio.listen(port);
+	var io = socketio.listen(options.port);
 
 	io.sockets.on('connection', (socket: Socket) => {
 		var id = _.uniqueId('c');
