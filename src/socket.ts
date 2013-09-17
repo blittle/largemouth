@@ -10,16 +10,9 @@ import subscriptions = require('subscriptions');
 
 var start = function(db: dbInterface, options: ServerOptions) {
 
-	var io = socketio.listen(options.port);
+	var io = socketio.listen(options.port || 3000);
 
-	io.sockets.on('connection', (socket: Socket) => {
-		var id = _.uniqueId('c');
-
-		subscriptions[id] = {};
-	});
-
-
-	io.sockets.on('connection', function (socket) {
+	io.sockets.on('connection', function (socket: Socket) {
 
 		var id = _.uniqueId('c');
 
