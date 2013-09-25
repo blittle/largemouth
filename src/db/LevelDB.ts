@@ -1,9 +1,9 @@
 ///<reference path="../../d.ts/DefinitelyTyped/levelup/levelup.d.ts"/>
 
 import levelup = require('levelup');
-import dbInterface = require('db');
+import Database = require('DatabaseInterface');
 
-class LevelUp implements dbInterface {
+class LevelUp implements Database {
 
 	private db;
 

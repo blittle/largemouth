@@ -1,6 +1,6 @@
-import db = require('db');
+import Database = require('DatabaseInterface');
 
-class InMemory implements db {
+class InMemory implements Database {
 
 	private data: any;
 
