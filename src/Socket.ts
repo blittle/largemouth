@@ -14,8 +14,6 @@ var start = function(db: Database, options: ServerOptions) {
 
 	io.sockets.on('connection', function (socket: Socket) {
 
-		subscriptions[socket.id] = {};
-
 		socket.emit('ready');
 
 		socket.on('subscribe', function(dataPath) {
@@ -28,7 +26,7 @@ var start = function(db: Database, options: ServerOptions) {
 		});
 
 		socket.on('disconnect', function() {
-			delete subscriptions[socket.id];
+//			delete subscriptions[socket.id];
 		});
 	});
 }
