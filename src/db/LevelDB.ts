@@ -3,7 +3,7 @@
 import levelup = require('levelup');
 import Database = require('DatabaseInterface');
 
-class LevelUp implements Database {
+class LevelUp {
 
 	private db;
 

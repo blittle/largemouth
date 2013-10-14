@@ -1,7 +1,9 @@
 ///<reference path="../d.ts/DefinitelyTyped/socket.io/socket.io.d.ts"/>
+///<reference path="../d.ts/DefinitelyTyped/async/async.d.ts"/>
 ///<reference path="../d.ts/DefinitelyTyped/underscore/underscore.d.ts"/>
 
 import _ = require('lodash');
+import async = require('async');
 
 import Database = require('db/DatabaseInterface');
 
@@ -11,7 +13,7 @@ interface Subscription {
 }
 
 class DataBaseAdapter {
-	private db : Database;
+	private db : Database.db;
 	private subscriptions;
 
 	constructor(db, subscriptions) {
@@ -19,50 +21,114 @@ class DataBaseAdapter {
 		this.subscriptions = subscriptions;
 	}
 
-	save(key, value, socket: Socket) {
-		console.log('Saving data', key, value);
+	set(req, socket: Socket) {
 
-		this.db.save(key, value, (error) => {
-			if(error) {
-				console.error(error);
-			} else {
-				var subscriptions = this.getSubscriptions(key);
-				console.log('Found subscriptions', subscriptions);
+        var path = req.url;
+        var value = req.value;
 
-				_.each(subscriptions, (subscription) => {
-					this.db.get(subscription.path, (error, value) => {
-						if(error) {
-							console.error(error);
-						} else {
-							_.each(subscription.sockets, (socket) => {
-								console.log('Notifying subscriber', socket.id, subscription.path);
-								console.log('value', value);
-								socket.emit('data', {
-									path: subscription.path,
-									value: value
-								});
-							});
-						}
-					})
-				});
-			}
-		});
-	}
+        this.updateParentVersions(path, () => {
+	        console.log('Saving data', path, value);
 
-	get(path, socket: Socket) {
-		this.saveSubscription(path, socket);
-
-		this.db.get(path, (err, value) => {
-			if (err) value = {};
-			socket.emit('data', {
-				path: path,
-				value: value
+			this.db.set(path, value, (error) => {
+				if(error) console.error(error);
+				else this.notifySubscriptions(path);
 			});
 		});
 	}
 
-	remove(key, value, socket: Socket) {
+	update(req, socket: Socket) {
 
+        var path = req.url;
+        var value = req.value;
+
+        this.updateParentVersions(path, () => {
+        	console.log('Saving data', path, value);
+
+			this.db.update(path, value, (error) => {
+				if(error) console.error(error);			
+				else this.notifySubscriptions(path);
+			});
+    	});
+	}
+
+	get(req, socket: Socket) {
+        var path = req.url;
+
+		this.saveSubscription(path, socket);
+
+		this.db.get(path, (err, value) => {
+			
+            if(value && value.version > req.versions[req.versions.length]) {
+                socket.emit('data', {
+                    path: path,
+                    value: value
+                });
+            }
+		});
+	}
+
+	remove(req, socket: Socket) {
+		this.updateParentVersions(req.path, () => {
+			this.db.remove(req.path, (err) => {
+				if(err) console.error('Remove error: ', err);
+				else this.notifySubscriptions(req.path);
+			});
+		});	
+	}
+
+	private updateParentVersions(path: string, callback: Function) {
+		var newPath = "";
+		var paths = path.split('/');
+		var scope = this;
+
+		console.log('Updating all parent versions for path', path);
+
+		async.each(paths, 
+			function(p, callback) {
+				newPath += newPath.length ? "/" + p : p;
+				scope.db.updateVersion.call(scope, path, callback);
+			},
+			function(err, results) {
+				if(err) console.error('Updating path error: ', err);
+				else callback();
+			});	
+	}
+
+	private notifySubscriptions(path: string) {
+		var subscriptions = this.getSubscriptions(path);
+		console.log('Found subscriptions', subscriptions);
+
+		_.each(subscriptions, (subscription) => {
+			// The db request is inside the loop because each subscription
+			// may be at a different path.
+			this.db.get(subscription.path, (error, value) => {
+				if(error) {
+					console.error(error);
+				} else {
+					_.each(subscription.sockets, (socket) => {
+						console.log('Notifying subscriber', socket.id, subscription.path);
+						console.log('value', value);
+						socket.emit('data', {
+							path: subscription.path,
+							value: value
+						});
+					});
+				}
+			})
+		});
+	}
+
+	public clearSubscription(socket: Socket) {
+
+		console.log('Clearing subscription', socket.id);
+
+		this.subscriptions = _.filter(this.subscriptions, function(subList) {
+			// Remove all instances of "socket" from the subscription list
+			_.pull(subList, socket);
+
+			// If there are no sockets left, filter out the entire path
+			return subList.length;
+		});
 	}
 
 	private saveSubscription(path: string, socket: Socket): DataBaseAdapter {

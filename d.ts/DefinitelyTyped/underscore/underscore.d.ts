@@ -277,6 +277,11 @@ declare module _ {
 		list: List<T>,
 		properties: U): T;
 
+	export function pull<T>(
+		list: List<T>,
+		value: T
+		): T[];
+
 	/**
 	* Returns the values in list without the elements that the truth test (iterator) passes.
 	* The opposite of filter.

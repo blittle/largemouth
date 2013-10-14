@@ -7,7 +7,7 @@ import DatabaseAdapter = require('DatabaseAdapter');
 import ServerOptions = require('ServerOptions');
 import subscriptions = require('subscriptions');
 
-var start = function(db: Database, options: ServerOptions) {
+var start = function(db: Database.db, options: ServerOptions) {
 
 	var io = socketio.listen(options.port || 3000);
 	var adapter = new DatabaseAdapter(db, subscriptions);
@@ -16,17 +16,26 @@ var start = function(db: Database, options: ServerOptions) {
 
 		socket.emit('ready');
 
-		socket.on('subscribe', function(dataPath) {
-			console.log('subscribe', dataPath);
-			adapter.get(dataPath, socket);
+		socket.on('subscribe', function(req) {
+			console.log('subscribe', req.url);
+			adapter.get(req, socket);
 		});
 
-		socket.on('set', function(obj) {
-			adapter.save(obj.path, obj.value, socket);
+		socket.on('set', function(req) {
+			console.log('BRET', req);
+			adapter.set(req, socket);
+		});
+
+		socket.on('update', function(req) {
+			adapter.update(req, socket);
+		});
+
+		socket.on('remove', function(req) {
+			adapter.remove(req, socket);
 		});
 
 		socket.on('disconnect', function() {
-//			delete subscriptions[socket.id];
+			adapter.clearSubscription(socket);
 		});
 	});
 }
