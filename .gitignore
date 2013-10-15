@@ -9,7 +9,6 @@ lib-cov
 *.iml
 *.js.map
 src/*.js
-test/*.js
 src/db/*.js
 app.js
 
