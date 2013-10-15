@@ -29,8 +29,6 @@ class InMemory implements Database.db {
 				}
 			}
 
-			data.version++;
-
 			data = data.children[path];
 		});
 
@@ -57,12 +55,8 @@ class InMemory implements Database.db {
 				}
 			}
 
-			data.version++;
-
 			data = data.children[path];
 		});
-
-		data.version++;
 
 		this.mergeDataFromElement(data, value);
 				
@@ -90,7 +84,7 @@ class InMemory implements Database.db {
 
 		if(callback) {
 			setTimeout(function() {
-				callback(data);	
+				callback(null, data);	
 			}, 0);
 		}
 
@@ -126,7 +120,9 @@ class InMemory implements Database.db {
 			data = data.children[paths[i]];
 		}
 
-		if(data && data.version) data.version++;
+		if(data && typeof data.version !== 'undefined') {
+			data.version++;
+		}
 
 		if(callback) setTimeout(callback, 0);
 
@@ -140,14 +136,14 @@ class InMemory implements Database.db {
 		}
 
 		_.each(el.children, (child, key) => {
-			if(!data[key]) {
-				data[key] = {
+			if(!data.children[key]) {
+				data.children[key] = {
 					version: 0,
 					children: {}
 				}
 			}
 
-			this.mergeDataFromElement(data[key], child);
+			this.mergeDataFromElement(data.children[key], child);
 		});	
 	}
 }

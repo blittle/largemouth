@@ -3,16 +3,7 @@ module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
-		uglify: {
-			options: {
-				banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-			},
-			build: {
-				src: 'src/<%= pkg.name %>.js',
-				dest: 'build/<%= pkg.name %>.min.js'
-			}
-		},
-
+		
 		typescript: {
 			base: {
 				src: ['src/**/*.ts', 'bin/*.ts'],
@@ -23,13 +14,21 @@ module.exports = function(grunt) {
 					fullSourceMapPath: true
 				}
 			}
+		},
+
+		jasmine_node: {
+		    // specNameMatcher: "*.js", // load only specs containing specNameMatcher
+		    // projectRoot: ".",
+		    requirejs: false,
+		    forceExit: true
 		}
 	});
 
-	// Load the plugin that provides the "uglify" task.
+	grunt.loadNpmTasks('grunt-jasmine-node');
 	grunt.loadNpmTasks('grunt-typescript');
 
 	// Default task(s).
 	grunt.registerTask('default', ['typescript']);
+	grunt.registerTask('test', ['typescript', 'jasmine_node']);
 
 };

@@ -57,13 +57,16 @@ class DataBaseAdapter {
 		this.saveSubscription(path, socket);
 
 		this.db.get(path, (err, value) => {
-			
-            if(value && value.version > req.versions[req.versions.length]) {
-                socket.emit('data', {
-                    path: path,
-                    value: value
-                });
-            }
+
+			if(err) console.error('Error reading from db', path);
+			else {
+				if(!req.data || (value && value.version > req.data.version) ) {
+	                socket.emit('data', {
+	                    path: path,
+	                    value: value
+	                });
+	            }	
+			}
 		});
 	}
 
@@ -79,6 +82,7 @@ class DataBaseAdapter {
 	private updateParentVersions(path: string, callback: Function) {
 		var newPath = "";
 		var paths = path.split('/');
+		paths.unshift("");
 		var scope = this;
 
 		console.log('Updating all parent versions for path', path);
@@ -86,7 +90,8 @@ class DataBaseAdapter {
 		async.each(paths, 
 			function(p, callback) {
 				newPath += newPath.length ? "/" + p : p;
-				scope.db.updateVersion.call(scope, path, callback);
+				var cachedPath = newPath + "";
+				scope.db.updateVersion.call(scope.db, cachedPath, callback);
 			},
 			function(err, results) {
 				if(err) console.error('Updating path error: ', err);
@@ -129,6 +134,8 @@ class DataBaseAdapter {
 			// If there are no sockets left, filter out the entire path
 			return subList.length;
 		});
+
+        console.log('remaining subscriptions', Object.keys(this.subscriptions));
 	}
 
 	private saveSubscription(path: string, socket: Socket): DataBaseAdapter {

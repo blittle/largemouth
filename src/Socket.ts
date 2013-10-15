@@ -22,7 +22,6 @@ var start = function(db: Database.db, options: ServerOptions) {
 		});
 
 		socket.on('set', function(req) {
-			console.log('BRET', req);
 			adapter.set(req, socket);
 		});
 
@@ -39,5 +38,6 @@ var start = function(db: Database.db, options: ServerOptions) {
 		});
 	});
 }
+
 
 export = start;

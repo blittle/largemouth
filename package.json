@@ -1,6 +1,7 @@
 {
   "name": "largemouth",
   "version": "0.0.1",
+  "repository": "https://github.com/blittle/largemouth",
   "description": "",
   "bin": {
     "largemouth": "bin/largemouth.js"
@@ -22,6 +23,8 @@
     "grunt": "~0.4.1",
     "grunt-typescript": "~0.2.4",
     "typescript": "~0.9.1-1",
-    "grunt-cli": "~0.1.9"
+    "grunt-cli": "~0.1.9",
+    "grunt-jasmine-node": "~0.1.0",
+    "sinon": "~1.7.3"
   }
 }
