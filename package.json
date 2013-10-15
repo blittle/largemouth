@@ -7,7 +7,7 @@
     "largemouth": "bin/largemouth.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "grunt test",
     "prepublish": "grunt"
   },
   "author": "Bret Little",
