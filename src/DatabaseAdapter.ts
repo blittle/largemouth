@@ -22,7 +22,6 @@ class DataBaseAdapter {
 	}
 
 	set(req, socket: Socket) {
-
         var path = req.url;
         var value = req.value;
 
@@ -126,13 +125,18 @@ class DataBaseAdapter {
 	public clearSubscription(socket: Socket) {
 
 		console.log('Clearing subscription', socket.id);
+        var oldSub = this.subscriptions;
 
-		this.subscriptions = _.filter(this.subscriptions, function(subList) {
+        this.subscriptions = {};
+
+		_.each(oldSub, (subList, key) => {
 			// Remove all instances of "socket" from the subscription list
 			_.pull(subList, socket);
 
 			// If there are no sockets left, filter out the entire path
-			return subList.length;
+			if(subList.length) {
+                this.subscriptions[key] = subList;
+            }
 		});
 
         console.log('remaining subscriptions', Object.keys(this.subscriptions));
