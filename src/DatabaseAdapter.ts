@@ -59,11 +59,16 @@ class DataBaseAdapter {
 
 			if(err) console.error('Error reading from db', path);
 			else {
-				if(!req.data || (value && value.version > req.data.version) ) {
+				// If there is no value submitted from the client or the server version
+				// is behind the client version, send down an updated version from the
+				// server, else update the server with the client data.
+				if(!req.value.value || (value && value.version > req.value.version) ) {
 					socket.emit('data', {
 						path: path,
 						value: value
 					});
+				} else {
+					this.set(req, socket);
 				}
 			}
 		});
