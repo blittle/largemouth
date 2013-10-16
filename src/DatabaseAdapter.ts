@@ -22,11 +22,11 @@ class DataBaseAdapter {
 	}
 
 	set(req, socket: Socket) {
-        var path = req.url;
-        var value = req.value;
+		var path = req.url;
+		var value = req.value;
 
-        this.updateParentVersions(path, () => {
-	        console.log('Saving data', path, value);
+		this.updateParentVersions(path, () => {
+			console.log('Saving data', path, value);
 
 			this.db.set(path, value, (error) => {
 				if(error) console.error(error);
@@ -37,21 +37,21 @@ class DataBaseAdapter {
 
 	update(req, socket: Socket) {
 
-        var path = req.url;
-        var value = req.value;
+		var path = req.url;
+		var value = req.value;
 
-        this.updateParentVersions(path, () => {
-        	console.log('Saving data', path, value);
+		this.updateParentVersions(path, () => {
+			console.log('Saving data', path, value);
 
 			this.db.update(path, value, (error) => {
-				if(error) console.error(error);			
+				if(error) console.error(error);
 				else this.notifySubscriptions(path);
 			});
-    	});
+		});
 	}
 
 	get(req, socket: Socket) {
-        var path = req.url;
+		var path = req.url;
 
 		this.saveSubscription(path, socket);
 
@@ -60,11 +60,11 @@ class DataBaseAdapter {
 			if(err) console.error('Error reading from db', path);
 			else {
 				if(!req.data || (value && value.version > req.data.version) ) {
-	                socket.emit('data', {
-	                    path: path,
-	                    value: value
-	                });
-	            }	
+					socket.emit('data', {
+						path: path,
+						value: value
+					});
+				}
 			}
 		});
 	}
@@ -75,7 +75,7 @@ class DataBaseAdapter {
 				if(err) console.error('Remove error: ', err);
 				else this.notifySubscriptions(req.path);
 			});
-		});	
+		});
 	}
 
 	private updateParentVersions(path: string, callback: Function) {
@@ -86,7 +86,7 @@ class DataBaseAdapter {
 
 		console.log('Updating all parent versions for path', path);
 
-		async.each(paths, 
+		async.each(paths,
 			function(p, callback) {
 				newPath += newPath.length ? "/" + p : p;
 				var cachedPath = newPath + "";
@@ -95,7 +95,7 @@ class DataBaseAdapter {
 			function(err, results) {
 				if(err) console.error('Updating path error: ', err);
 				else callback();
-			});	
+			});
 	}
 
 	private notifySubscriptions(path: string) {
@@ -125,9 +125,9 @@ class DataBaseAdapter {
 	public clearSubscription(socket: Socket) {
 
 		console.log('Clearing subscription', socket.id);
-        var oldSub = this.subscriptions;
+		var oldSub = this.subscriptions;
 
-        this.subscriptions = {};
+		this.subscriptions = {};
 
 		_.each(oldSub, (subList, key) => {
 			// Remove all instances of "socket" from the subscription list
@@ -135,11 +135,11 @@ class DataBaseAdapter {
 
 			// If there are no sockets left, filter out the entire path
 			if(subList.length) {
-                this.subscriptions[key] = subList;
-            }
+				this.subscriptions[key] = subList;
+			}
 		});
 
-        console.log('remaining subscriptions', Object.keys(this.subscriptions));
+		console.log('remaining subscriptions', Object.keys(this.subscriptions));
 	}
 
 	private saveSubscription(path: string, socket: Socket): DataBaseAdapter {
@@ -158,7 +158,7 @@ class DataBaseAdapter {
 
 		return _.chain(this.subscriptions)
 			.map((sockets, path)=> {
-			    return {
+				return {
 					path: path,
 					sockets: sockets
 				}

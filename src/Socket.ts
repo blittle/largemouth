@@ -22,7 +22,7 @@ var start = function(db: Database.db, options: ServerOptions) {
 		});
 
 		socket.on('set', function(req) {
-            console.log('set', req.url, req.value);
+			console.log('set', req.url, req.value);
 			adapter.set(req, socket);
 		});
 

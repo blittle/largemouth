@@ -35,7 +35,7 @@ class InMemory implements Database.db {
 		data.version = value.version;
 		if(value.value) data.value = value.value;
 		else data.children = value.children;
-				
+
 		if(callback) setTimeout(callback, 0);
 
 		return this;
@@ -59,7 +59,7 @@ class InMemory implements Database.db {
 		});
 
 		this.mergeDataFromElement(data, value);
-				
+
 		if(callback) setTimeout(callback, 0);
 
 		return this;
@@ -84,7 +84,7 @@ class InMemory implements Database.db {
 
 		if(callback) {
 			setTimeout(function() {
-				callback(null, data);	
+				callback(null, data);
 			}, 0);
 		}
 
@@ -144,7 +144,7 @@ class InMemory implements Database.db {
 			}
 
 			this.mergeDataFromElement(data.children[key], child);
-		});	
+		});
 	}
 }
 
