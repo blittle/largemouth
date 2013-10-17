@@ -67,10 +67,10 @@ describe('In Memory DB', function () {
     });
 
     it('Should remove paths from the db', function(run) {
-        db.set('deep/nested/path1', {value: 'mumtaz', version: 0, children: {}}, function() {
+        db.set('deep/nested/path', {value: 'mumtaz', version: 0, children: {}}, function() {
             db.remove('deep/nested/path', function() {
                 db.get('deep/nested/path', function(err, value) {
-                    expect(value.value).toBeUndefined();
+                    expect(value).toBeNull();
                     run();
                 });
             });

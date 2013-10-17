@@ -14,7 +14,7 @@ var start = function(db: Database.db, options: ServerOptions) {
 
 	io.sockets.on('connection', function (socket: Socket) {
 
-		socket.emit('ready');
+		socket.emit('ready', {id: socket.id});
 
 		socket.on('subscribe', function(req) {
 			console.log('subscribe', req.url);

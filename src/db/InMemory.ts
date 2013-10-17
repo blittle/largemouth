@@ -22,6 +22,8 @@ class InMemory implements Database.db {
 		var data = this.data;
 
 		_.each(paths, function(path) {
+//			if(!data.children) data.children = {};
+
 			if(!data.children[path]) {
 				data.children[path] = {
 					version: 0,
@@ -34,7 +36,7 @@ class InMemory implements Database.db {
 
 		data.version = value.version;
 		if(value.value) data.value = value.value;
-		else data.children = value.children;
+		else data.children = value.children || {};
 
 		if(callback) setTimeout(callback, 0);
 
@@ -48,6 +50,8 @@ class InMemory implements Database.db {
 		var data = this.data;
 
 		_.each(paths, function(path) {
+//			if(!data.children) data.children = {};
+
 			if(!data.children[path]) {
 				data.children[path] = {
 					version: 0,
@@ -71,16 +75,14 @@ class InMemory implements Database.db {
 
 		var data = this.data;
 
-		_.each(paths, function(path) {
-			if(!data.children[path]) {
-				data.children[path] = {
-					version: 0,
-					children: {}
-				}
+		for(var i = 0, iLength = paths.length; i < iLength; i++) {
+			if(!data.children[paths[i]]) {
+				if(callback) callback(null, null);
+				return this;
 			}
 
-			data = data.children[path];
-		});
+			data = data.children[paths[i]];
+		}
 
 		if(callback) {
 			setTimeout(function() {
@@ -98,6 +100,8 @@ class InMemory implements Database.db {
 		var data = this.data;
 
 		for(var i = 0, iLength = (paths.length - 1); i < iLength; i++) {
+//			if(!data.children) data.children = {};
+
 			if(!data.children[paths[i]]) break;
 			data = data.children[paths[i]];
 		}
@@ -111,16 +115,26 @@ class InMemory implements Database.db {
 
 	updateVersion(path, callback) {
 
+		console.log('updating version for path', path, this.data.version);
+
 		var paths = path.split('/');
 
 		var data = this.data;
+		var skip = false;
 
-		for(var i = 0, iLength = paths.length; i < iLength; i++) {
-			if(!data || !data.children[paths[i]]) break;
-			data = data.children[paths[i]];
+		if(path.length) {
+			for(var i = 0, iLength = paths.length; i < iLength; i++) {
+//			if(!data.children) break;
+
+				if(!data || !data.children[paths[i]]) {
+					skip = true;
+					break;
+				}
+				data = data.children[paths[i]];
+			}
 		}
 
-		if(data && typeof data.version !== 'undefined') {
+		if(!skip && data && typeof data.version !== 'undefined') {
 			data.version++;
 		}
 
@@ -136,6 +150,8 @@ class InMemory implements Database.db {
 		}
 
 		_.each(el.children, (child, key) => {
+//			if(!data.children) break;
+
 			if(!data.children[key]) {
 				data.children[key] = {
 					version: 0,
