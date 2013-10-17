@@ -115,12 +115,14 @@ class DataBaseAdapter {
 					console.error(error);
 				} else {
 					_.each(subscription.sockets, (socket) => {
-						console.log('Notifying subscriber', socket.id, subscription.path);
-						console.log('value', value);
-						socket.emit('data', {
-							path: subscription.path,
-							value: value
-						});
+						if(typeof value !== 'undefined' && value !== null) {
+							console.log('Notifying subscriber', socket.id, subscription.path);
+							console.log('value', value);
+							socket.emit('data', {
+								path: subscription.path,
+								value: value
+							});
+						}
 					});
 				}
 			})
