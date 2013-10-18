@@ -7,7 +7,7 @@ var mockSocket = {
 	},
 	calls: [],
 	id: Math.random()
-};
+}, mockSocket2;
 
 describe('Database Adapter', function () {
 	var adapter, subscriptions;
@@ -20,6 +20,14 @@ describe('Database Adapter', function () {
 			calls: [],
 			id: Math.random()
 		};
+
+		mockSocket2 = {
+			emit: function(type, res) {
+
+			},
+			calls: [],
+			id: Math.random()
+		}
 		subscriptions = {};
 		adapter = new DatabaseAdapter(new InMemory(), subscriptions);
 	});
@@ -29,7 +37,7 @@ describe('Database Adapter', function () {
 	})
 
 	it('Should initialize the memory datastructure', function() {
-		adapter.get({ url: "some/path", value: {} }, mockSocket);
+		adapter.get({ url: "some/path", value: {version: 1} }, mockSocket);
 		expect(adapter.db.data.version).toBe(0);
 		expect(adapter.db.data.children.some).toBeUndefined();
 	});
@@ -64,7 +72,8 @@ describe('Database Adapter', function () {
 		adapter.get({ url: "some/path", value: {} }, mockSocket);
 
 		mockSocket.emit = function() {
-			expect(arguments[1].value.value).toBe("does this work");
+			expect(arguments[0]).toBe("syncSuccess");
+			expect(arguments[1].path).toBe("some/path");
 			run();
 		}
 
@@ -75,7 +84,7 @@ describe('Database Adapter', function () {
 		}}, mockSocket);
 	});
 
-	it('Should only notify subscribers', function(run) {
+	it('Should not notify subscribbers of same socket client', function(run) {
 		adapter.get({ url: "some/1", value: {} }, mockSocket);
 		adapter.get({ url: "some/2", value: {} }, mockSocket);
 
@@ -93,13 +102,43 @@ describe('Database Adapter', function () {
 			i++;
 			if(i == 1) {
 				expect(res.path).toBe('some/1');
-				expect(JSON.stringify(res.value)).toBe(JSON.stringify({"version":3,"children":{},"value":"something"}));
+				expect(type).toBe('syncSuccess');
+
+				setTimeout(function() {
+					// Should only make one socket emit request, only to some/1 for a success
+					// and not to some/2 because it is on the same socket client
+					expect(i).toBe(1);
+					run();
+				}, 100);
 			}
-			if(i == 2) {
-				expect(res.path).toBe('some');
-				expect(JSON.stringify(res.value)).toBe(JSON.stringify({ version : 0, children : { 1 : { version : 3, children : {  }, value : 'something' } } }));
+		}
+	});
+
+	it('Should only notify subscribers', function(run) {
+
+		var i = 0;
+
+		adapter.get({ url: "some/1", value: {} }, mockSocket);
+		adapter.get({ url: "some/1", value: {} }, mockSocket2);
+
+		adapter.set({url: "some/1", value: {
+			value: "something",
+			version: 3,
+			children: {}
+		}}, mockSocket);
+
+		mockSocket2.emit = function(type, res) {
+			i++;
+			if(i === 1) {
+				expect(res.path).toBe('some/1');
+				expect(JSON.stringify(res.value)).toBe(JSON.stringify({ version : 3, children : {  }, value : 'something' }));
+				expect(type).toBe('set');
+
+				setTimeout(function() {
+					expect(i).toBe(1);
+					run();
+				}, 100);
 			}
-			if(i == 2) run();
 		}
 	});
 
@@ -124,15 +163,13 @@ describe('Database Adapter', function () {
 
 		var i = 0;
 
-		console.log('--------------------------------------');
-
 		mockSocket.emit = function(type, res) {
 			i++;
 
-			if(i == 5) {
+			if(i == 3) {
 				setTimeout(function() {
-					// There should only be 5 messages emmited the client
-					expect(i).toBe(5);
+					// There should only be 3 messages emmited the client
+					expect(i).toBe(3);
 					run();
 				}, 100);
 			}

@@ -29,8 +29,14 @@ class DataBaseAdapter {
 			console.log('Saving data', path, value);
 
 			this.db.set(path, value, (error) => {
-				if(error) console.error(error);
-				else this.notifySubscriptions(path);
+				if(error) {
+					console.error(error);
+					this.sendError(path, socket);
+				}
+				else {
+					this.sendSuccess(path, socket);
+					this.notifySubscriptions(path, socket);
+				}
 			});
 		});
 	}
@@ -44,8 +50,14 @@ class DataBaseAdapter {
 			console.log('Saving data', path, value);
 
 			this.db.update(path, value, (error) => {
-				if(error) console.error(error);
-				else this.notifySubscriptions(path);
+				if(error) {
+					console.error(error);
+					this.sendError(path, socket);
+				}
+				else {
+					this.sendSuccess(path, socket);
+					this.notifySubscriptions(path, socket);
+				}
 			});
 		});
 	}
@@ -62,12 +74,14 @@ class DataBaseAdapter {
 				// If there is no value submitted from the client or the server version
 				// is behind the client version, send down an updated version from the
 				// server, else update the server with the client data.
-				if(!req.value.value || (value && value.version > req.value.version) ) {
-					socket.emit('data', {
+				if((!req.value.value && value) || (value && value.version > req.value.version) ) {
+					socket.emit('set', {
 						path: path,
 						value: value
 					});
-				} else {
+				} else if(req.value.value) {
+					console.log('Replacing local data with client data');
+					// @todo Need to merge the data if possible
 					this.set(req, socket);
 				}
 			}
@@ -75,10 +89,16 @@ class DataBaseAdapter {
 	}
 
 	remove(req, socket: Socket) {
-		this.updateParentVersions(req.path, () => {
-			this.db.remove(req.path, (err) => {
-				if(err) console.error('Remove error: ', err);
-				else this.notifySubscriptions(req.path);
+		this.updateParentVersions(req.url, () => {
+			this.db.remove(req.url, (err) => {
+				if(err) {
+					console.error('Remove error: ', err);
+					this.sendError(req.path, socket);
+				}
+				else {
+					this.sendSuccess(req.url, socket);
+					this.notifySubscriptions(req.url, socket);
+				}
 			});
 		});
 	}
@@ -103,22 +123,25 @@ class DataBaseAdapter {
 			});
 	}
 
-	private notifySubscriptions(path: string) {
+	private notifySubscriptions(path: string, requestSocket: Socket) {
 		var subscriptions = this.getSubscriptions(path);
 		console.log('Found subscriptions', subscriptions);
 
 		_.each(subscriptions, (subscription) => {
 			// The db request is inside the loop because each subscription
 			// may be at a different path.
+
 			this.db.get(subscription.path, (error, value) => {
 				if(error) {
 					console.error(error);
 				} else {
 					_.each(subscription.sockets, (socket) => {
-						if(typeof value !== 'undefined' && value !== null) {
+						// Don't send a notification if the data doesn't exist or if the socket
+						// to notify is the same socket that made the original request.
+						if(typeof value !== 'undefined' && value !== null && requestSocket !== socket) {
 							console.log('Notifying subscriber', socket.id, subscription.path);
 							console.log('value', value);
-							socket.emit('data', {
+							socket.emit('set', {
 								path: subscription.path,
 								value: value
 							});
@@ -126,6 +149,18 @@ class DataBaseAdapter {
 					});
 				}
 			})
+		});
+	}
+
+	private sendSuccess(path: string, socket: Socket) {
+		socket.emit('syncSuccess', {
+			path: path
+		});
+	}
+
+	private sendError(path: string, socket: Socket) {
+		socket.emit('syncError', {
+			path: path
 		});
 	}
 
