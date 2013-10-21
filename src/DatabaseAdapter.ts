@@ -79,7 +79,7 @@ class DataBaseAdapter {
 						path: path,
 						value: value
 					});
-				} else if(req.value.value) {
+				} else if((req.value.value !== null && typeof req.value.value !== 'undefined') || req.value.children) {
 					console.log('Replacing local data with client data');
 					// @todo Need to merge the data if possible
 					this.set(req, socket);
