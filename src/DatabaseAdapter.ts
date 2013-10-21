@@ -74,7 +74,7 @@ class DataBaseAdapter {
 				// If there is no value submitted from the client or the server version
 				// is behind the client version, send down an updated version from the
 				// server, else update the server with the client data.
-				if((!req.value.value && value) || (value && value.version > req.value.version) ) {
+				if(((typeof req.value.value == 'undefined' && !req.value.children) && value) || (value && value.version > req.value.version) ) {
 					socket.emit('set', {
 						path: path,
 						value: value
