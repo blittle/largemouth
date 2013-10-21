@@ -10,9 +10,9 @@
     "test": "grunt test",
     "prepublish": "grunt"
   },
-  "files": {
+  "files": [
     "src", "bin"
-  },
+  ],
   "author": "Bret Little",
   "license": "MIT",
   "preferGlobal": true,
