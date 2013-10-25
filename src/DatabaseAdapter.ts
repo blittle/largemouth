@@ -21,7 +21,7 @@ class DataBaseAdapter {
 		this.subscriptions = subscriptions;
 	}
 
-	set(req, socket: Socket) {
+	set(req, socket: Socket, callback?: Function) {
 		var path = req.url;
 		var value = req.value;
 
@@ -31,17 +31,17 @@ class DataBaseAdapter {
 			this.db.set(path, value, (error) => {
 				if(error) {
 					console.error(error);
-					this.sendError(path, socket);
+					this.executeClientCallback(error, callback);
 				}
 				else {
-					this.sendSuccess(path, socket);
+					this.executeClientCallback(null, callback);
 					this.notifySubscriptions(path, socket);
 				}
 			});
 		});
 	}
 
-	update(req, socket: Socket) {
+	update(req, socket: Socket, callback?: Function) {
 
 		var path = req.url;
 		var value = req.value;
@@ -52,10 +52,10 @@ class DataBaseAdapter {
 			this.db.update(path, value, (error) => {
 				if(error) {
 					console.error(error);
-					this.sendError(path, socket);
+					this.executeClientCallback(error, callback);
 				}
 				else {
-					this.sendSuccess(path, socket);
+					this.executeClientCallback(null, callback);
 					this.notifySubscriptions(path, socket);
 				}
 			});
@@ -88,15 +88,15 @@ class DataBaseAdapter {
 		});
 	}
 
-	remove(req, socket: Socket) {
+	remove(req, socket: Socket, callback?: Function) {
 		this.updateParentVersions(req.url, () => {
-			this.db.remove(req.url, (err) => {
-				if(err) {
-					console.error('Remove error: ', err);
-					this.sendError(req.path, socket);
+			this.db.remove(req.url, (error) => {
+				if(error) {
+					console.error('Remove error: ', error);
+					this.executeClientCallback(error, callback);
 				}
 				else {
-					this.sendSuccess(req.url, socket);
+					this.executeClientCallback(null, callback);
 					this.notifySubscriptions(req.url, socket);
 				}
 			});
@@ -150,6 +150,10 @@ class DataBaseAdapter {
 				}
 			})
 		});
+	}
+
+	private executeClientCallback(msg: string, callback?: Function) {
+		if(typeof callback === 'function') callback(msg);
 	}
 
 	private sendSuccess(path: string, socket: Socket) {

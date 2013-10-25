@@ -58,12 +58,14 @@ describe('Database Adapter', function () {
 			run();
 		}
 
-		adapter.set({url: "some/path", value: {
-			value: "something",
-			version: 3,
-			children: {}
-		}}, mockSocket);
-
+		adapter.set({
+			url: "some/path",
+			value: {
+				value: "something",
+				version: 3,
+				children: {}
+			}
+		}, mockSocket2)
 
 	});
 
@@ -72,7 +74,7 @@ describe('Database Adapter', function () {
 		adapter.get({ url: "some/path", value: {} }, mockSocket);
 
 		mockSocket.emit = function() {
-			expect(arguments[0]).toBe("syncSuccess");
+			expect(arguments[0]).toBe("set");
 			expect(arguments[1].path).toBe("some/path");
 			run();
 		}
@@ -81,7 +83,7 @@ describe('Database Adapter', function () {
 			value: "does this work",
 			version: 0,
 			children: {}
-		}}, mockSocket);
+		}}, mockSocket2);
 	});
 
 	it('Should not notify subscribbers of same socket client', function(run) {
@@ -100,18 +102,14 @@ describe('Database Adapter', function () {
 
 		mockSocket.emit = function(type, res) {
 			i++;
-			if(i == 1) {
-				expect(res.path).toBe('some/1');
-				expect(type).toBe('syncSuccess');
-
-				setTimeout(function() {
-					// Should only make one socket emit request, only to some/1 for a success
-					// and not to some/2 because it is on the same socket client
-					expect(i).toBe(1);
-					run();
-				}, 100);
-			}
 		}
+
+		setTimeout(function() {
+			// Should not make any response cause the
+			// subscriber and requester are the same socket
+			expect(i).toBe(0);
+			run();
+		}, 100);
 	});
 
 	it('Should only notify subscribers', function(run) {
@@ -165,14 +163,71 @@ describe('Database Adapter', function () {
 
 		mockSocket.emit = function(type, res) {
 			i++;
-
-			if(i == 3) {
-				setTimeout(function() {
-					// There should only be 3 messages emmited the client
-					expect(i).toBe(3);
-					run();
-				}, 100);
-			}
 		}
+
+		setTimeout(function() {
+			// No messages should have been sent to the client
+			expect(i).toBe(0);
+			run();
+		}, 100);
+	});
+
+	it('Should execute onComplete callback on set', function(run) {
+		var onCompleteCalls = 0;;
+
+		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+
+		adapter.set({url: "books/alma", value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket, function() {
+			onCompleteCalls++;
+		});
+
+		setTimeout(function() {
+			expect(onCompleteCalls).toBe(1);
+			run();
+		}, 100);
+	});
+
+	it('Should execute onComplete callback on update', function(run) {
+		var onCompleteCalls = 0;;
+
+		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+
+		adapter.update({url: "books/alma", value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket, function() {
+			onCompleteCalls++;
+		});
+
+		setTimeout(function() {
+			expect(onCompleteCalls).toBe(1);
+			run();
+		}, 100);
+	});
+
+	it('Should execute onComplete callback on remove', function(run) {
+		var onCompleteCalls = 0;
+
+		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+
+		adapter.set({url: "books/alma", value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket);
+
+		adapter.remove({ url: "books/alma" }, mockSocket, function() {
+			onCompleteCalls++;
+		});
+
+		setTimeout(function() {
+			expect(onCompleteCalls).toBe(1);
+			run();
+		}, 100);
 	});
 });
