@@ -92,22 +92,18 @@ describe('Database Adapter', function () {
 
 		adapter.get({ url: "some", value: {} }, mockSocket);
 
-		adapter.set({url: "some/1", value: {
+		adapter.set({url: "some/1", reqId: 1, value: {
 			value: "something",
 			version: 3,
 			children: {}
 		}}, mockSocket);
 
-		var i = 0;
-
-		mockSocket.emit = function(type, res) {
-			i++;
-		}
-
 		setTimeout(function() {
 			// Should not make any response cause the
 			// subscriber and requester are the same socket
-			expect(i).toBe(0);
+            // except for the set success event
+			expect(mockSocket.calls.length).toBe(1);
+            expect(mockSocket.calls[0][1].reqId).toBe(1);
 			run();
 		}, 100);
 	});
@@ -145,88 +141,82 @@ describe('Database Adapter', function () {
 		adapter.get({ url: "some", value: {} }, mockSocket);
 		adapter.get({ url: "some/2", value: {} }, mockSocket);
 
-		adapter.set({url: "some/1", value: {
+		adapter.set({url: "some/1", reqId: 1, value: {
 			value: "something",
 			version: 3,
 			children: {}
 		}}, mockSocket);
 
-		adapter.set({"url":"some","value":{"version":0}}, mockSocket);
+		adapter.set({"url":"some", reqId: 2, "value":{"version":0}}, mockSocket);
 
-		adapter.set({url: "some/2", value: {
+		adapter.set({url: "some/2", reqId: 3, value: {
 			value: "something2",
 			version: 3,
 			children: {}
 		}}, mockSocket);
 
-		var i = 0;
-
-		mockSocket.emit = function(type, res) {
-			i++;
-		}
-
 		setTimeout(function() {
-			// No messages should have been sent to the client
-			expect(i).toBe(0);
+			// Only success messages should be sent to the client
+			expect(mockSocket.calls.length).toBe(3);
+            expect(mockSocket.calls[0][1].reqId).toBe(1);
+            expect(mockSocket.calls[1][1].reqId).toBe(2);
+            expect(mockSocket.calls[2][1].reqId).toBe(3);
 			run();
 		}, 100);
 	});
 
 	it('Should execute onComplete callback on set', function(run) {
-		var onCompleteCalls = 0;;
 
 		adapter.get({ url: "books/alma", value: {} }, mockSocket);
 
-		adapter.set({url: "books/alma", value: {
-			value: "heleman",
-			version: 3,
-			children: {}
-		}}, mockSocket, function() {
-			onCompleteCalls++;
-		});
-
-		setTimeout(function() {
-			expect(onCompleteCalls).toBe(1);
-			run();
-		}, 100);
-	});
-
-	it('Should execute onComplete callback on update', function(run) {
-		var onCompleteCalls = 0;;
-
-		adapter.get({ url: "books/alma", value: {} }, mockSocket);
-
-		adapter.update({url: "books/alma", value: {
-			value: "heleman",
-			version: 3,
-			children: {}
-		}}, mockSocket, function() {
-			onCompleteCalls++;
-		});
-
-		setTimeout(function() {
-			expect(onCompleteCalls).toBe(1);
-			run();
-		}, 100);
-	});
-
-	it('Should execute onComplete callback on remove', function(run) {
-		var onCompleteCalls = 0;
-
-		adapter.get({ url: "books/alma", value: {} }, mockSocket);
-
-		adapter.set({url: "books/alma", value: {
+		adapter.set({url: "books/alma", reqId: 100, value: {
 			value: "heleman",
 			version: 3,
 			children: {}
 		}}, mockSocket);
 
-		adapter.remove({ url: "books/alma" }, mockSocket, function() {
-			onCompleteCalls++;
-		});
+		setTimeout(function() {
+            expect(mockSocket.calls.length).toBe(1);
+            expect(mockSocket.calls[0][1].reqId).toBe(100);
+            expect(mockSocket.calls[0][1].err).toBe(null);
+			run();
+		}, 100);
+	});
+
+	it('Should execute onComplete callback on update', function(run) {
+
+		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+
+		adapter.update({url: "books/alma", reqId: 100, value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket);
 
 		setTimeout(function() {
-			expect(onCompleteCalls).toBe(1);
+            expect(mockSocket.calls.length).toBe(1);
+            expect(mockSocket.calls[0][1].reqId).toBe(100);
+            expect(mockSocket.calls[0][1].err).toBe(null);
+			run();
+		}, 100);
+	});
+
+	it('Should execute onComplete callback on remove', function(run) {
+
+		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+
+		adapter.set({url: "books/alma", reqId: 100, value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket);
+
+		adapter.remove({ url: "books/alma", reqId: 101 }, mockSocket);
+
+		setTimeout(function() {
+			expect(mockSocket.calls.length).toBe(2);
+            expect(mockSocket.calls[1][1].reqId).toBe(101);
+            expect(mockSocket.calls[1][1].err).toBe(null);
 			run();
 		}, 100);
 	});

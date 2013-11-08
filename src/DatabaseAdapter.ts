@@ -31,10 +31,10 @@ class DataBaseAdapter {
 			this.db.set(path, value, (error) => {
 				if(error) {
 					console.error(error);
-					this.executeClientCallback(error, callback);
+					this.executeClientCallback(req.reqId, error, socket);
 				}
 				else {
-					this.executeClientCallback(null, callback);
+					this.executeClientCallback(req.reqId, null, socket);
 					this.notifySubscriptions(path, socket);
 				}
 			});
@@ -52,10 +52,10 @@ class DataBaseAdapter {
 			this.db.update(path, value, (error) => {
 				if(error) {
 					console.error(error);
-					this.executeClientCallback(error, callback);
+					this.executeClientCallback(req.reqId, error, socket);
 				}
 				else {
-					this.executeClientCallback(null, callback);
+					this.executeClientCallback(req.reqId, null, socket);
 					this.notifySubscriptions(path, socket);
 				}
 			});
@@ -93,10 +93,10 @@ class DataBaseAdapter {
 			this.db.remove(req.url, (error) => {
 				if(error) {
 					console.error('Remove error: ', error);
-					this.executeClientCallback(error, callback);
+					this.executeClientCallback(req.reqId, error, socket);
 				}
 				else {
-					this.executeClientCallback(null, callback);
+					this.executeClientCallback(req.reqId, null, socket);
 					this.notifySubscriptions(req.url, socket);
 				}
 			});
@@ -152,8 +152,11 @@ class DataBaseAdapter {
 		});
 	}
 
-	private executeClientCallback(msg: string, callback?: Function) {
-		if(typeof callback === 'function') callback(msg);
+	private executeClientCallback(reqId: string, err: string, socket: Socket) {
+		socket.emit('syncComplete', {
+           reqId: reqId,
+           err: err
+        });
 	}
 
 	private sendSuccess(path: string, socket: Socket) {

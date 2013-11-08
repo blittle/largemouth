@@ -21,17 +21,15 @@ var start = function(db: Database.db, options: ServerOptions) {
 			adapter.get(req, socket);
 		});
 
-		socket.on('set', function(req, callback) {
-			console.log('set', req.url, req.value);
-			adapter.set(req, socket, callback);
+		socket.on('set', function(req) {
+			console.log('set', req.url, req.value); adapter.set(req, socket); });
+
+		socket.on('update', function(req) {
+			adapter.update(req, socket);
 		});
 
-		socket.on('update', function(req, callback) {
-			adapter.update(req, socket, callback);
-		});
-
-		socket.on('remove', function(req, callback) {
-			adapter.remove(req, socket, callback);
+		socket.on('remove', function(req) {
+			adapter.remove(req, socket);
 		});
 
 		socket.on('disconnect', function() {
