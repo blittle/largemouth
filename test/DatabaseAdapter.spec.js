@@ -37,19 +37,19 @@ describe('Database Adapter', function () {
 	})
 
 	it('Should initialize the memory datastructure', function() {
-		adapter.get({ url: "some/path", value: {version: 1} }, mockSocket);
+		adapter.get({ path: "some/path", value: {version: 1} }, mockSocket);
 		expect(adapter.db.data.version).toBe(0);
 		expect(adapter.db.data.children.some).toBeUndefined();
 	});
 
 	it('Should add a subscription', function () {
-		adapter.get({ url: "some/path", value: {} }, mockSocket);
+		adapter.get({ path: "some/path", value: {} }, mockSocket);
 		expect(subscriptions['some/path'][0]).toBe(mockSocket);
 	});
 
 	it('Should should modify memory datastructure versions on set', function(run) {
 
-		adapter.get({ url: "some/path", value: "" }, mockSocket);
+		adapter.get({ path: "some/path", value: "" }, mockSocket);
 
 		mockSocket.emit = function() {
 			expect(adapter.db.data.version).toBe(1);
@@ -59,7 +59,7 @@ describe('Database Adapter', function () {
 		}
 
 		adapter.set({
-			url: "some/path",
+			path: "some/path",
 			value: {
 				value: "something",
 				version: 3,
@@ -71,7 +71,7 @@ describe('Database Adapter', function () {
 
 	it('Should save data and notify subscriptions', function(run) {
 
-		adapter.get({ url: "some/path", value: {} }, mockSocket);
+		adapter.get({ path: "some/path", value: {} }, mockSocket);
 
 		mockSocket.emit = function() {
 			expect(arguments[0]).toBe("set");
@@ -79,7 +79,7 @@ describe('Database Adapter', function () {
 			run();
 		}
 
-		adapter.set({url: "some/path", value: {
+		adapter.set({path: "some/path", value: {
 			value: "does this work",
 			version: 0,
 			children: {}
@@ -87,12 +87,12 @@ describe('Database Adapter', function () {
 	});
 
 	it('Should not notify subscribbers of same socket client', function(run) {
-		adapter.get({ url: "some/1", value: {} }, mockSocket);
-		adapter.get({ url: "some/2", value: {} }, mockSocket);
+		adapter.get({ path: "some/1", value: {} }, mockSocket);
+		adapter.get({ path: "some/2", value: {} }, mockSocket);
 
-		adapter.get({ url: "some", value: {} }, mockSocket);
+		adapter.get({ path: "some", value: {} }, mockSocket);
 
-		adapter.set({url: "some/1", reqId: 1, value: {
+		adapter.set({path: "some/1", reqId: 1, value: {
 			value: "something",
 			version: 3,
 			children: {}
@@ -112,10 +112,10 @@ describe('Database Adapter', function () {
 
 		var i = 0;
 
-		adapter.get({ url: "some/1", value: {} }, mockSocket);
-		adapter.get({ url: "some/1", value: {} }, mockSocket2);
+		adapter.get({ path: "some/1", value: {} }, mockSocket);
+		adapter.get({ path: "some/1", value: {} }, mockSocket2);
 
-		adapter.set({url: "some/1", value: {
+		adapter.set({path: "some/1", value: {
 			value: "something",
 			version: 3,
 			children: {}
@@ -137,19 +137,19 @@ describe('Database Adapter', function () {
 	});
 
 	it('Should not send messages for blank data', function(run) {
-		adapter.get({ url: "some/1", value: {} }, mockSocket);
-		adapter.get({ url: "some", value: {} }, mockSocket);
-		adapter.get({ url: "some/2", value: {} }, mockSocket);
+		adapter.get({ path: "some/1", value: {} }, mockSocket);
+		adapter.get({ path: "some", value: {} }, mockSocket);
+		adapter.get({ path: "some/2", value: {} }, mockSocket);
 
-		adapter.set({url: "some/1", reqId: 1, value: {
+		adapter.set({path: "some/1", reqId: 1, value: {
 			value: "something",
 			version: 3,
 			children: {}
 		}}, mockSocket);
 
-		adapter.set({"url":"some", reqId: 2, "value":{"version":0}}, mockSocket);
+		adapter.set({"path":"some", reqId: 2, "value":{"version":0}}, mockSocket);
 
-		adapter.set({url: "some/2", reqId: 3, value: {
+		adapter.set({path: "some/2", reqId: 3, value: {
 			value: "something2",
 			version: 3,
 			children: {}
@@ -167,9 +167,9 @@ describe('Database Adapter', function () {
 
 	it('Should execute onComplete callback on set', function(run) {
 
-		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+		adapter.get({ path: "books/alma", value: {} }, mockSocket);
 
-		adapter.set({url: "books/alma", reqId: 100, value: {
+		adapter.set({path: "books/alma", reqId: 100, value: {
 			value: "heleman",
 			version: 3,
 			children: {}
@@ -185,9 +185,9 @@ describe('Database Adapter', function () {
 
 	it('Should execute onComplete callback on update', function(run) {
 
-		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+		adapter.get({ path: "books/alma", value: {} }, mockSocket);
 
-		adapter.update({url: "books/alma", reqId: 100, value: {
+		adapter.update({path: "books/alma", reqId: 100, value: {
 			value: "heleman",
 			version: 3,
 			children: {}
@@ -203,15 +203,15 @@ describe('Database Adapter', function () {
 
 	it('Should execute onComplete callback on remove', function(run) {
 
-		adapter.get({ url: "books/alma", value: {} }, mockSocket);
+		adapter.get({ path: "books/alma", value: {} }, mockSocket);
 
-		adapter.set({url: "books/alma", reqId: 100, value: {
+		adapter.set({path: "books/alma", reqId: 100, value: {
 			value: "heleman",
 			version: 3,
 			children: {}
 		}}, mockSocket);
 
-		adapter.remove({ url: "books/alma", reqId: 101 }, mockSocket);
+		adapter.remove({ path: "books/alma", reqId: 101 }, mockSocket);
 
 		setTimeout(function() {
 			expect(mockSocket.calls.length).toBe(2);

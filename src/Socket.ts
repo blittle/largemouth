@@ -17,12 +17,13 @@ var start = function(db: Database.db, options: ServerOptions) {
 		socket.emit('ready', {id: socket.id});
 
 		socket.on('subscribe', function(req) {
-			console.log('subscribe', req.url);
+			console.log('subscribe', req.path);
 			adapter.get(req, socket);
 		});
 
 		socket.on('set', function(req) {
-			console.log('set', req.url, req.value); adapter.set(req, socket); });
+			console.log('set', req.path, req.value);
+            adapter.set(req, socket); });
 
 		socket.on('update', function(req) {
 			adapter.update(req, socket);

@@ -22,7 +22,7 @@ class DataBaseAdapter {
 	}
 
 	set(req, socket: Socket, callback?: Function) {
-		var path = req.url;
+		var path = req.path;
 		var value = req.value;
 
 		this.updateParentVersions(path, () => {
@@ -43,7 +43,7 @@ class DataBaseAdapter {
 
 	update(req, socket: Socket, callback?: Function) {
 
-		var path = req.url;
+		var path = req.path;
 		var value = req.value;
 
 		this.updateParentVersions(path, () => {
@@ -63,7 +63,7 @@ class DataBaseAdapter {
 	}
 
 	get(req, socket: Socket) {
-		var path = req.url;
+		var path = req.path;
 
 		this.saveSubscription(path, socket);
 
@@ -89,15 +89,15 @@ class DataBaseAdapter {
 	}
 
 	remove(req, socket: Socket, callback?: Function) {
-		this.updateParentVersions(req.url, () => {
-			this.db.remove(req.url, (error) => {
+		this.updateParentVersions(req.path, () => {
+			this.db.remove(req.path, (error) => {
 				if(error) {
 					console.error('Remove error: ', error);
 					this.executeClientCallback(req.reqId, error, socket);
 				}
 				else {
 					this.executeClientCallback(req.reqId, null, socket);
-					this.notifySubscriptions(req.url, socket);
+					this.notifySubscriptions(req.path, socket);
 				}
 			});
 		});
