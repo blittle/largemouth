@@ -127,29 +127,28 @@ class DataBaseAdapter {
 		var subscriptions = this.getSubscriptions(path);
 		console.log('Found subscriptions', subscriptions);
 
-		_.each(subscriptions, (subscription) => {
-			// The db request is inside the loop because each subscription
-			// may be at a different path.
+        this.db.get(path, (error, value) => {
+            if(error) {
+                console.error(error);
+            } else {
+                _.each(subscriptions, (subscription) => {
+                    _.each(subscription.sockets, (socket) => {
+                        // Don't send a notification if the data doesn't exist or if the socket
+                        // to notify is the same socket that made the original request.
+                        if(typeof value !== 'undefined' && value !== null && requestSocket !== socket) {
+                            console.log('Notifying subscriber', socket.id, subscription.path);
+                            console.log('value', value);
+                            socket.emit('set', {
+                                path: path,
+                                value: value
+                            });
+                        }
+                    });
+                });
+            }
+        })
 
-			this.db.get(subscription.path, (error, value) => {
-				if(error) {
-					console.error(error);
-				} else {
-					_.each(subscription.sockets, (socket) => {
-						// Don't send a notification if the data doesn't exist or if the socket
-						// to notify is the same socket that made the original request.
-						if(typeof value !== 'undefined' && value !== null && requestSocket !== socket) {
-							console.log('Notifying subscriber', socket.id, subscription.path);
-							console.log('value', value);
-							socket.emit('set', {
-								path: subscription.path,
-								value: value
-							});
-						}
-					});
-				}
-			})
-		});
+
 	}
 
 	private executeClientCallback(reqId: string, err: string, socket: Socket) {
