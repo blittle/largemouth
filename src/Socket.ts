@@ -11,7 +11,7 @@ import Config = require('Config');
 
 var start = function(socketio: any, db: Database.db, config: Config.Interface, options: ServerOptions) {
 
-	var io : SocketManager = socketio.listen(options.port || 3000);
+	var io : SocketManager = socketio.listen(options.port || config.port || 3000);
 	var adapter = new DatabaseAdapter(db, subscriptions);
 
 	io.sockets.on('connection', function (socket: Socket) {

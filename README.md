@@ -13,11 +13,6 @@ LargeMouth is built on top of [Socket.io](http://socket.io/) and [NodeJS](http:/
 npm install -g largemouth
 ```
 
-##Startup
-```bash
-largemouth -h
-```
-
 ##Boot Options
 Change the server port (3000 default):
 ```bash
@@ -32,7 +27,7 @@ largemouth -c ../myConfig.js
 [SmallMouth](https://github.com/blittle/smallmouth) is the client side library.
 
 ##Configuration
-Server configuration is defined within a JavaScript file by default located at the working directory of where LargeMouth is run.
+Server configuration is defined within a JavaScript file by default located within the working directory of where LargeMouth is run.
 The config file allows the following:
  - Permissions - The security permission definition.
  - Custom events - Define custom events which the server will listen for.
@@ -41,6 +36,9 @@ An example config file:
 
 ```javascript
 module.exports = function(largemouth) {
+
+	// Optionally define the server port here (commandline will override this value)
+	largemouth.port = 3000;
 
 	// The custom event will be passed a request object which will contain
 	// any data sent from the client as well as the actual socket instance,
