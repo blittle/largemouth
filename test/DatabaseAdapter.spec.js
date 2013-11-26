@@ -1,4 +1,5 @@
 var DatabaseAdapter = require('../src/DatabaseAdapter');
+var RuleEngine = require('../src/RuleEngine');
 var InMemory = require('../src/db/InMemory');
 
 var mockSocket = {
@@ -8,6 +9,8 @@ var mockSocket = {
 	calls: [],
 	id: Math.random()
 }, mockSocket2;
+
+var ruleEngine = new RuleEngine();
 
 describe('Database Adapter', function () {
 	var adapter, subscriptions;
@@ -29,7 +32,7 @@ describe('Database Adapter', function () {
 			id: Math.random()
 		}
 		subscriptions = {};
-		adapter = new DatabaseAdapter(new InMemory(), subscriptions);
+		adapter = new DatabaseAdapter(new InMemory(), ruleEngine, subscriptions);
 	});
 
 	afterEach(function() {

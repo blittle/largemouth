@@ -38,7 +38,7 @@ class RuleEngine {
 		// we found the desired rule definition
 		_.find(paths, (path, i): any => {
 			if(!config[path]) return true;
-			config = config[paths];
+			config = config[path];
 		});
 
 		return config;

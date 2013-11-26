@@ -4,7 +4,7 @@ module.exports = function(largemouth) {
 	}
 
 	largemouth.rules = {
-		".write": false,
+		".write": true,
 		".read": true
 	}
 }

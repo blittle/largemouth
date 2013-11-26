@@ -35,17 +35,20 @@ class DataBaseAdapter {
 				this.db.set(path, value, (error) => {
 					if(error) {
 						console.error(error);
-						this.executeClientCallback(req.reqId, error, socket);
+						this.executeClientCallback(req.reqId, error, socket, path);
 					}
 					else {
-						this.executeClientCallback(req.reqId, null, socket);
+						this.executeClientCallback(req.reqId, null, socket, path);
 						this.notifySubscriptions(path, socket);
 					}
 				});
 			});
 		} else {
 			console.log('WARNING: Permission denied, no write access', path);
-			this.executeClientCallback(req.reqId, "Permission denied", socket);
+			this.db.get(path, (error, value) => {
+				if(error) console.log("ERROR cannot pull data on permission error");
+				this.executeClientCallback(req.reqId, "Permission denied", socket, path, value);
+			});
 		}
 	}
 
@@ -61,17 +64,20 @@ class DataBaseAdapter {
 				this.db.update(path, value, (error) => {
 					if(error) {
 						console.error(error);
-						this.executeClientCallback(req.reqId, error, socket);
+						this.executeClientCallback(req.reqId, error, socket, path);
 					}
 					else {
-						this.executeClientCallback(req.reqId, null, socket);
+						this.executeClientCallback(req.reqId, null, socket, path);
 						this.notifySubscriptions(path, socket);
 					}
 				});
 			});
 		} else {
 			console.log('WARNING: Permission denied, no write access', path);
-			this.executeClientCallback(req.reqId, "Permission denied", socket);
+			this.db.get(path, (error, value) => {
+				if(error) console.log("ERROR cannot pull data on permission error");
+				this.executeClientCallback(req.reqId, "Permission denied", socket, path, value);
+			});
 		}
 	}
 
@@ -102,27 +108,32 @@ class DataBaseAdapter {
 			});
 		} else {
 			console.log('WARNING: Permission denied, no read access', path);
-			this.executeClientCallback(req.reqId, "Permission denied", socket);
+			this.executeClientCallback(req.reqId, "Permission denied", socket, path);
 		}
 	}
 
 	remove(req, socket: Socket, callback?: Function) {
-		if(this.ruleEngine.canWrite(req.path)) {
-			this.updateParentVersions(req.path, () => {
-				this.db.remove(req.path, (error) => {
+		var path = req.path;
+
+		if(this.ruleEngine.canWrite(path)) {
+			this.updateParentVersions(path, () => {
+				this.db.remove(path, (error) => {
 					if(error) {
 						console.error('Remove error: ', error);
-						this.executeClientCallback(req.reqId, error, socket);
+						this.executeClientCallback(req.reqId, error, socket, path);
 					}
 					else {
-						this.executeClientCallback(req.reqId, null, socket);
-						this.notifySubscriptions(req.path, socket);
+						this.executeClientCallback(req.reqId, null, socket, path);
+						this.notifySubscriptions(path, socket);
 					}
 				});
 			});
 		} else {
-			console.log('WARNING: Permission denied, no write access', req.path);
-			this.executeClientCallback(req.reqId, "Permission denied", socket);
+			console.log('WARNING: Permission denied, no write access', path);
+			this.db.get(path, (error, value) => {
+				if(error) console.log("ERROR cannot pull data on permission error");
+				this.executeClientCallback(req.reqId, "Permission denied", socket, path, value);
+			});
 		}
 	}
 
@@ -150,35 +161,37 @@ class DataBaseAdapter {
 		var subscriptions = this.getSubscriptions(path);
 		console.log('Found subscriptions', subscriptions);
 
-        this.db.get(path, (error, value) => {
-            if(error) {
-                console.error(error);
-            } else {
-                _.each(subscriptions, (subscription) => {
-                    _.each(subscription.sockets, (socket) => {
-                        // Don't send a notification if the data doesn't exist or if the socket
-                        // to notify is the same socket that made the original request.
-                        if(typeof value !== 'undefined' && value !== null && requestSocket !== socket) {
-                            console.log('Notifying subscriber', socket.id, subscription.path);
-                            console.log('value', value);
-                            socket.emit('set', {
-                                path: path,
-                                value: value
-                            });
-                        }
-                    });
-                });
-            }
-        })
+		this.db.get(path, (error, value) => {
+			if(error) {
+				console.error(error);
+			} else {
+				_.each(subscriptions, (subscription) => {
+					_.each(subscription.sockets, (socket) => {
+						// Don't send a notification if the data doesn't exist or if the socket
+						// to notify is the same socket that made the original request.
+						if(typeof value !== 'undefined' && value !== null && requestSocket !== socket) {
+							console.log('Notifying subscriber', socket.id, subscription.path);
+							console.log('value', value);
+							socket.emit('set', {
+								path: path,
+								value: value
+							});
+						}
+					});
+				});
+			}
+		})
 
 
 	}
 
-	private executeClientCallback(reqId: string, err: string, socket: Socket) {
+	private executeClientCallback(reqId: string, err: string, socket: Socket, path: string, data?: any) {
 		socket.emit('syncComplete', {
-           reqId: reqId,
-           err: err
-        });
+			reqId: reqId,
+			err: err,
+			path: path,
+			data: data
+		});
 	}
 
 	private sendSuccess(path: string, socket: Socket) {
