@@ -38,7 +38,7 @@ An example config file:
 module.exports = function(largemouth) {
 
 	// Optionally define the server port here (commandline will override this value)
-	largemouth.port = 3000;
+	largemouth.port = 3000;[[
 
 	// The custom event will be passed a request object which will contain
 	// any data sent from the client as well as the actual socket instance,
@@ -48,7 +48,7 @@ module.exports = function(largemouth) {
 		}
 	}
 
-	// Not yet implemented
+	// Only basic rules implemented, no expressions/variables
 	largemouth.rules = {
 		".read": true,
 		".write": false,
