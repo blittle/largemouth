@@ -4,6 +4,7 @@
 
 import _ = require('lodash');
 import async = require('async');
+import RuleEngine = require('RuleEngine');
 
 import Database = require('db/DatabaseInterface');
 
@@ -15,30 +16,37 @@ interface Subscription {
 class DataBaseAdapter {
 	private db : Database.db;
 	private subscriptions;
+	private ruleEngine: RuleEngine;
 
-	constructor(db, subscriptions) {
+	constructor(db, ruleEngine: RuleEngine, subscriptions) {
 		this.db = db;
 		this.subscriptions = subscriptions;
+		this.ruleEngine = ruleEngine;
 	}
 
 	set(req, socket: Socket, callback?: Function) {
 		var path = req.path;
 		var value = req.value;
 
-		this.updateParentVersions(path, () => {
-			console.log('Saving data', path, value);
+		if(this.ruleEngine.canWrite(path)) {
+			this.updateParentVersions(path, () => {
+				console.log('Saving data', path, value);
 
-			this.db.set(path, value, (error) => {
-				if(error) {
-					console.error(error);
-					this.executeClientCallback(req.reqId, error, socket);
-				}
-				else {
-					this.executeClientCallback(req.reqId, null, socket);
-					this.notifySubscriptions(path, socket);
-				}
+				this.db.set(path, value, (error) => {
+					if(error) {
+						console.error(error);
+						this.executeClientCallback(req.reqId, error, socket);
+					}
+					else {
+						this.executeClientCallback(req.reqId, null, socket);
+						this.notifySubscriptions(path, socket);
+					}
+				});
 			});
-		});
+		} else {
+			console.log('WARNING: Permission denied, no write access', path);
+			this.executeClientCallback(req.reqId, "Permission denied", socket);
+		}
 	}
 
 	update(req, socket: Socket, callback?: Function) {
@@ -46,20 +54,25 @@ class DataBaseAdapter {
 		var path = req.path;
 		var value = req.value;
 
-		this.updateParentVersions(path, () => {
-			console.log('Saving data', path, value);
+		if(this.ruleEngine.canWrite(path)) {
+			this.updateParentVersions(path, () => {
+				console.log('Saving data', path, value);
 
-			this.db.update(path, value, (error) => {
-				if(error) {
-					console.error(error);
-					this.executeClientCallback(req.reqId, error, socket);
-				}
-				else {
-					this.executeClientCallback(req.reqId, null, socket);
-					this.notifySubscriptions(path, socket);
-				}
+				this.db.update(path, value, (error) => {
+					if(error) {
+						console.error(error);
+						this.executeClientCallback(req.reqId, error, socket);
+					}
+					else {
+						this.executeClientCallback(req.reqId, null, socket);
+						this.notifySubscriptions(path, socket);
+					}
+				});
 			});
-		});
+		} else {
+			console.log('WARNING: Permission denied, no write access', path);
+			this.executeClientCallback(req.reqId, "Permission denied", socket);
+		}
 	}
 
 	get(req, socket: Socket) {
@@ -67,40 +80,50 @@ class DataBaseAdapter {
 
 		this.saveSubscription(path, socket);
 
-		this.db.get(path, (err, value) => {
+		if(this.ruleEngine.canRead(path)) {
+			this.db.get(path, (err, value) => {
 
-			if(err) console.error('Error reading from db', path);
-			else {
-				// If there is no value submitted from the client or the server version
-				// is behind the client version, send down an updated version from the
-				// server, else update the server with the client data.
-				if(((typeof req.value.value == 'undefined' && req.value !== null && !req.value.children) && value) || (value && value.version > req.value.version) ) {
-					socket.emit('set', {
-						path: path,
-						value: value
-					});
-				} else if((req.value.value !== null && typeof req.value.value !== 'undefined') || req.value.children) {
-					console.log('Replacing local data with client data');
-					// @todo Need to merge the data if possible
-					this.set(req, socket);
+				if(err) console.error('Error reading from db', path);
+				else {
+					// If there is no value submitted from the client or the server version
+					// is behind the client version, send down an updated version from the
+					// server, else update the server with the client data.
+					if(((typeof req.value.value == 'undefined' && req.value !== null && !req.value.children) && value) || (value && value.version > req.value.version) ) {
+						socket.emit('set', {
+							path: path,
+							value: value
+						});
+					} else if((req.value.value !== null && typeof req.value.value !== 'undefined') || req.value.children) {
+						console.log('Replacing local data with client data');
+						// @todo Need to merge the data if possible
+						this.set(req, socket);
+					}
 				}
-			}
-		});
+			});
+		} else {
+			console.log('WARNING: Permission denied, no read access', path);
+			this.executeClientCallback(req.reqId, "Permission denied", socket);
+		}
 	}
 
 	remove(req, socket: Socket, callback?: Function) {
-		this.updateParentVersions(req.path, () => {
-			this.db.remove(req.path, (error) => {
-				if(error) {
-					console.error('Remove error: ', error);
-					this.executeClientCallback(req.reqId, error, socket);
-				}
-				else {
-					this.executeClientCallback(req.reqId, null, socket);
-					this.notifySubscriptions(req.path, socket);
-				}
+		if(this.ruleEngine.canWrite(req.path)) {
+			this.updateParentVersions(req.path, () => {
+				this.db.remove(req.path, (error) => {
+					if(error) {
+						console.error('Remove error: ', error);
+						this.executeClientCallback(req.reqId, error, socket);
+					}
+					else {
+						this.executeClientCallback(req.reqId, null, socket);
+						this.notifySubscriptions(req.path, socket);
+					}
+				});
 			});
-		});
+		} else {
+			console.log('WARNING: Permission denied, no write access', req.path);
+			this.executeClientCallback(req.reqId, "Permission denied", socket);
+		}
 	}
 
 	private updateParentVersions(path: string, callback: Function) {

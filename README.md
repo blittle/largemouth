@@ -49,14 +49,12 @@ module.exports = function(largemouth) {
 	}
 
 	// Not yet implemented
-	largemouth.permissions = {
-		"rules": {
+	largemouth.rules = {
+		".read": true,
+		".write": false,
+		"chats": {
 			".read": true,
-			".write": false,
-			"chats": {
-				".read": true,
-				".write": true
-			}
+			".write": true
 		}
 	}
 }

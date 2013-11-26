@@ -40,9 +40,8 @@ try {
 	var configFile = require(path.join(process.cwd(), parsed.config));
 	// Load config with the default config object
 	configFile(config.instance);
-} catch(err) {
-	console.warn('Error reading config file: ' + path.join(process.cwd(), parsed.config), err);
-}
+	console.log('Configuration loaded');
+} catch(err) {}
 
 Socket(require('socket.io'), dbInstance, config.instance, parsed);
 
