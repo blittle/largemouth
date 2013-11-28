@@ -223,4 +223,99 @@ describe('Database Adapter', function () {
 			run();
 		}, 100);
 	});
+
+	it('Should not set data without permissions', function(run) {
+		ruleEngine = new RuleEngine({
+			".read": false,
+			".write": false
+		});
+
+		adapter = new DatabaseAdapter(new InMemory(), ruleEngine, subscriptions);
+
+		adapter.set({path: "books/alma", reqId: 100, value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket);
+
+		adapter.set({path: "", reqId: 101, value: {
+			value: "bom",
+			version: 3,
+			children: {}
+		}}, mockSocket);
+
+		setTimeout(function() {
+			expect(mockSocket.calls.length).toBe(2);
+			expect(mockSocket.calls[0][1].reqId).toBe(100);
+			expect(mockSocket.calls[0][1].err).toBe('Permission denied');
+
+			expect(mockSocket.calls[1][1].reqId).toBe(101);
+			expect(mockSocket.calls[1][1].err).toBe('Permission denied');
+
+			// Reset the rule engine
+			ruleEngine = new RuleEngine();
+			run();
+		}, 100);
+	});
+
+	it('Should not remove data without permissions', function(run) {
+		ruleEngine = new RuleEngine({
+			".read": false,
+			".write": false
+		});
+
+		adapter = new DatabaseAdapter(new InMemory(), ruleEngine, subscriptions);
+
+		adapter.remove({path: "books/alma", reqId: 100}, mockSocket);
+		adapter.remove({path: "", reqId: 101}, mockSocket);
+
+		setTimeout(function() {
+			expect(mockSocket.calls.length).toBe(2);
+
+			expect(mockSocket.calls[0][1].reqId).toBe(100);
+			expect(mockSocket.calls[0][1].err).toBe('Permission denied');
+
+			expect(mockSocket.calls[1][1].reqId).toBe(101);
+			expect(mockSocket.calls[1][1].err).toBe('Permission denied');
+
+			// Reset the rule engine
+			ruleEngine = new RuleEngine();
+			run();
+		}, 100);
+	});
+
+	it('Should not update data without permissions', function(run) {
+		ruleEngine = new RuleEngine({
+			".read": false,
+			".write": false
+		});
+
+		adapter = new DatabaseAdapter(new InMemory(), ruleEngine, subscriptions);
+
+		adapter.update({path: "books/alma", reqId: 100, value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket);
+
+		adapter.update({path: "", reqId: 101, value: {
+			value: "heleman",
+			version: 3,
+			children: {}
+		}}, mockSocket);
+
+		setTimeout(function() {
+			expect(mockSocket.calls.length).toBe(2);
+
+			expect(mockSocket.calls[0][1].reqId).toBe(100);
+			expect(mockSocket.calls[0][1].err).toBe('Permission denied');
+
+			expect(mockSocket.calls[1][1].reqId).toBe(101);
+			expect(mockSocket.calls[1][1].err).toBe('Permission denied');
+
+			// Reset the rule engine
+			ruleEngine = new RuleEngine();
+			run();
+		}, 100);
+	});
 });
