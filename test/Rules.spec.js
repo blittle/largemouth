@@ -79,8 +79,8 @@ describe('In Memory DB', function () {
 			}
 		});
 
-		expect(ruleEngine.canRead('')).toBeFalsy();
-		expect(ruleEngine.canWrite('')).toBeFalsy();
+		expect(ruleEngine.canRead('')).toBeTruthy();
+		expect(ruleEngine.canWrite('')).toBeTruthy();
 
 		expect(ruleEngine.canRead('chats')).toBeTruthy();
 		expect(ruleEngine.canWrite('chats')).toBeFalsy();

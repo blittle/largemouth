@@ -217,7 +217,7 @@ describe('Database Adapter', function () {
 		adapter.remove({ path: "books/alma", reqId: 101 }, mockSocket);
 
 		setTimeout(function() {
-			expect(mockSocket.calls.length).toBe(2);
+			expect(mockSocket.calls.length).toBe(3);
             expect(mockSocket.calls[1][1].reqId).toBe(101);
             expect(mockSocket.calls[1][1].err).toBe(null);
 			run();
