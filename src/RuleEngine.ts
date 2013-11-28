@@ -18,13 +18,10 @@ class RuleEngine {
 	 * @param config
 	 */
 	constructor(config: any) {
-		if(typeof config == 'undefined' || config == null) {
-			config = {
-				".read": true,
-				".write": true
-			}
-		}
-		this.config = config;
+		this.config = _.extend({
+			".read": true,
+			".write": true
+		}, config);
 	}
 
 	private getRuleDefinition(path: string): any {

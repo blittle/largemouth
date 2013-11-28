@@ -39,7 +39,7 @@ class DataBaseAdapter {
 					}
 					else {
 						this.executeClientCallback(req.reqId, null, socket, path);
-						this.notifySubscriptions(path, socket);
+						this.notifySubscriptionsSet(path, socket);
 					}
 				});
 			});
@@ -68,7 +68,7 @@ class DataBaseAdapter {
 					}
 					else {
 						this.executeClientCallback(req.reqId, null, socket, path);
-						this.notifySubscriptions(path, socket);
+						this.notifySubscriptionsSet(path, socket);
 					}
 				});
 			});
@@ -112,7 +112,7 @@ class DataBaseAdapter {
 		}
 	}
 
-	remove(req, socket: Socket, callback?: Function) {
+	remove(req, socket: Socket) {
 		var path = req.path;
 
 		if(this.ruleEngine.canWrite(path)) {
@@ -124,7 +124,7 @@ class DataBaseAdapter {
 					}
 					else {
 						this.executeClientCallback(req.reqId, null, socket, path);
-						this.notifySubscriptions(path, socket);
+						this.notifySubscriptionsRemove(path, socket);
 					}
 				});
 			});
@@ -157,7 +157,7 @@ class DataBaseAdapter {
 			});
 	}
 
-	private notifySubscriptions(path: string, requestSocket: Socket) {
+	private notifySubscriptionsSet(path: string, requestSocket: Socket) {
 		var subscriptions = this.getSubscriptions(path);
 		console.log('Found subscriptions', subscriptions);
 
@@ -170,7 +170,7 @@ class DataBaseAdapter {
 						// Don't send a notification if the data doesn't exist or if the socket
 						// to notify is the same socket that made the original request.
 						if(typeof value !== 'undefined' && value !== null && requestSocket !== socket) {
-							console.log('Notifying subscriber', socket.id, subscription.path);
+							console.log('Notifying subscriber set', socket.id, subscription.path);
 							console.log('value', value);
 							socket.emit('set', {
 								path: path,
@@ -180,9 +180,21 @@ class DataBaseAdapter {
 					});
 				});
 			}
-		})
+		});
+	}
 
+	private notifySubscriptionsRemove(path: string, requestSocket: Socket) {
+		var subscriptions = this.getSubscriptions(path);
+		console.log('Found subscriptions', subscriptions);
 
+		_.each(subscriptions, (subscription) => {
+			_.each(subscription.sockets, (socket) => {
+				console.log('Notifying subscriber remove', socket.id, subscription.path);
+				socket.emit('remove', {
+					path: path
+				});
+			});
+		});
 	}
 
 	private executeClientCallback(reqId: string, err: string, socket: Socket, path: string, data?: any) {
