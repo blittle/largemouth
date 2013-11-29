@@ -24,7 +24,7 @@ class DataBaseAdapter {
 		this.ruleEngine = ruleEngine;
 	}
 
-	set(req, socket: Socket, callback?: Function) {
+	set(req, socket: Socket) {
 		var path = req.path;
 		var value = req.value;
 

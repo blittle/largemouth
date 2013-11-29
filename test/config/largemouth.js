@@ -5,6 +5,13 @@ module.exports = function(largemouth) {
 
 	largemouth.rules = {
 		".write": true,
-		".read": true
+		".read": true,
+		"users": {
+			".write": true,
+			".read": true,
+			"tearsa": {
+				".write": false
+			}
+		}
 	}
 }
