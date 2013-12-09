@@ -61,7 +61,7 @@ module.exports = function(largemouth) {
 ```
 
 ##Release notes
- - 0.3.0 - Basic permissions and rules implemented.
+ - 0.3.0 - Basic permissions and rules implemented. Fully implemented the resource.remove() method.
  - 0.2.4 - Load the config file and define custom events.
  - 0.2.0 - Don't send down entire datasets to notify clients of changes, rather send down what changed and allow the client to resolve the data.
  - 0.1.0 - Minimal portion of the Firebase API supported.
