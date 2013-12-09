@@ -24,7 +24,16 @@ class DataBaseAdapter {
 		this.ruleEngine = ruleEngine;
 	}
 
-	set(req, socket: Socket) {
+	/**
+	 * Completely replace a value in the database and notify subscribers
+	 *
+	 * @param req - An object which should contain path and value {path: ..., value: ...}
+	 * @param socket - The socket connection which made the original request. Used to send error/success
+	 * notifications.
+	 * @param forceSend [default false] - By default the requesting socket will not get notified of data change.
+	 * Set this param to true to forcably send the data to the client.
+	 */
+	set(req, socket: Socket, forceSend: boolean=false) {
 		var path = req.path;
 		var value = req.value;
 
@@ -39,7 +48,7 @@ class DataBaseAdapter {
 					}
 					else {
 						this.executeClientCallback(req.reqId, null, socket, path);
-						this.notifySubscriptionsSet(path, socket);
+						this.notifySubscriptionsSet(path, socket, forceSend);
 					}
 				});
 			});
@@ -52,7 +61,16 @@ class DataBaseAdapter {
 		}
 	}
 
-	update(req, socket: Socket, callback?: Function) {
+	/**
+	 * Partially update a value in the database and notify subscribers.
+	 *
+	 * @param req - An object which should contain path and value {path: ..., value: ...}
+	 * @param socket - The socket connection which made the original request. Used to send error/success
+	 * notifications.
+	 * @param forceSend [default false] - By default the requesting socket will not get notified of data change.
+	 * Set this param to true to forcably send the data to the client.
+	 */
+	update(req, socket: Socket, forceSend: boolean=false) {
 
 		var path = req.path;
 		var value = req.value;
@@ -68,7 +86,7 @@ class DataBaseAdapter {
 					}
 					else {
 						this.executeClientCallback(req.reqId, null, socket, path);
-						this.notifySubscriptionsSet(path, socket);
+						this.notifySubscriptionsSet(path, socket, forceSend);
 					}
 				});
 			});
@@ -157,7 +175,7 @@ class DataBaseAdapter {
 			});
 	}
 
-	private notifySubscriptionsSet(path: string, requestSocket: Socket) {
+	private notifySubscriptionsSet(path: string, requestSocket: Socket, forceSend: boolean=false) {
 		var subscriptions = this.getSubscriptions(path);
 		console.log('Found subscriptions', subscriptions);
 
@@ -169,7 +187,7 @@ class DataBaseAdapter {
 					_.each(subscription.sockets, (socket) => {
 						// Don't send a notification if the data doesn't exist or if the socket
 						// to notify is the same socket that made the original request.
-						if(typeof value !== 'undefined' && value !== null && requestSocket !== socket) {
+						if(forceSend || (typeof value !== 'undefined' && value !== null && requestSocket !== socket)) {
 							console.log('Notifying subscriber set', socket.id, subscription.path);
 							console.log('value', value);
 							socket.emit('set', {
