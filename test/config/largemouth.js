@@ -9,7 +9,7 @@ module.exports = function(largemouth) {
 		"users": {
 			".write": true,
 			".read": true,
-			"tearsa": {
+			"lukas": {
 				".write": false
 			}
 		}

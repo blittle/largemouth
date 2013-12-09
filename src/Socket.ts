@@ -44,7 +44,7 @@ var start = function(socketio: any, db: Database.db, config: Config.Interface, o
 		// Initialize custom events
 		_.each(config.events, function(event, key: string) {
 			socket.on(key, function(req) {
-				event(req, socket);
+				event(req, socket, adapter);
 			});
 		});
 	});
