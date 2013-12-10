@@ -15,6 +15,14 @@ var socketio = {
 						emit: function() {}
 					})
 				}
+			},
+
+			configure: function() {
+
+			},
+
+			set: function() {
+
 			}
 		}
 	}
