@@ -16,6 +16,13 @@ var start = function(socketio: any, db: Database.db, config: Config.Interface, o
 	var io : SocketManager = socketio.listen(options.port || config.port || 3000);
 	var adapter = new DatabaseAdapter(db, ruleEngine, subscriptions);
 
+	io.configure(function() {
+		io.set('authorization', function(handshakeData, callback) {
+			if(config.auth) config.auth(handshakeData, callback);
+			else callback(null, true);
+		});
+	})
+
 	io.sockets.on('connection', function (socket: Socket) {
 
 		socket.emit('ready', {id: socket.id});
