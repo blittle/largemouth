@@ -32,6 +32,7 @@ interface Socket {
 	send(data: any, fn: Function): Socket;
 	emit(ev: any, ...data:any[]): Socket;
 	on(ns: string, fn: Function): Socket;
+	manager: any;
 }
 
 interface SocketNamespace {

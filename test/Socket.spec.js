@@ -12,7 +12,11 @@ var socketio = {
 						on: function(type, callback) {
 							events[type] = callback;
 						},
-						emit: function() {}
+						emit: function() {},
+
+						manager: {
+							handshaken: {}
+						}
 					})
 				}
 			},
