@@ -18,15 +18,16 @@ var start = function(socketio: any, db: Database.db, config: Config.Interface, o
 
 	var tokens = {};
 
-	io.configure(function() {
-		io.set('authorization', function(handshakeData, callback) {
-			if(config.auth) config.auth(handshakeData, callback);
-			else {
-				handshakeData.token = Math.ceil(Math.random() * 10000000);
-				callback(null, true);
-			}
-		});
-	})
+//	io.configure(function() {
+//		io.set('authorization', function(handshakeData, callback) {
+//			if(config.auth) config.auth(handshakeData, callback);
+//			else {
+//				handshakeData.token = Math.ceil(Math.random() * 10000000);
+//				callback(null, true);
+//			}
+//		});
+//	})
+
 
 	io.sockets.on('connection', function (socket: Socket) {
 
