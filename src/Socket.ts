@@ -45,7 +45,7 @@ var start = function(socketio: any, db: Database.db, config: Config.Interface, o
 							token: token
 						});
 					} else {
-						socket.emit('error', 'auth error');
+						socket.emit('authError', error);
 						socket.disconnect();
 					}
 				});
