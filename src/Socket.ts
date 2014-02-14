@@ -4,11 +4,11 @@
 import _ = require('lodash');
 
 import Database = require('db/DatabaseInterface');
-import DatabaseAdapter = require('DatabaseAdapter');
-import ServerOptions = require('ServerOptions');
-import subscriptions = require('subscriptions');
-import RuleEngine = require('RuleEngine');
-import Config = require('Config');
+import DatabaseAdapter = require('./DatabaseAdapter');
+import ServerOptions = require('./ServerOptions');
+import subscriptions = require('./subscriptions');
+import RuleEngine = require('./RuleEngine');
+import Config = require('./Config');
 
 var start = function(socketio: any, db: Database.db, config: Config.Interface, options: ServerOptions) {
 

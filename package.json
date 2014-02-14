@@ -1,6 +1,6 @@
 {
   "name": "largemouth",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "repository": "https://github.com/blittle/largemouth",
   "description": "A realtime communication framework",
   "bin": {

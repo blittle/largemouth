@@ -10,8 +10,7 @@ module.exports = function(grunt) {
 				options: {
 					module: 'commonjs', //or commonjs
 					target: 'es5', //or es3
-					sourcemap: true,
-					fullSourceMapPath: true
+					sourcemap: true
 				}
 			}
 		},

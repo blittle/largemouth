@@ -4,7 +4,7 @@
 
 import _ = require('lodash');
 import async = require('async');
-import RuleEngine = require('RuleEngine');
+import RuleEngine = require('./RuleEngine');
 
 import Database = require('db/DatabaseInterface');
 
@@ -183,8 +183,8 @@ class DataBaseAdapter {
 			if(error) {
 				console.error(error);
 			} else {
-				_.each(subscriptions, (subscription) => {
-					_.each(subscription.sockets, (socket) => {
+				_.each(subscriptions, (subscription: Subscription) => {
+					_.each(subscription.sockets, (socket: Socket) => {
 						// Don't send a notification if the data doesn't exist or if the socket
 						// to notify is the same socket that made the original request.
 						if(forceSend || (typeof value !== 'undefined' && value !== null && requestSocket !== socket)) {
@@ -205,8 +205,8 @@ class DataBaseAdapter {
 		var subscriptions = this.getSubscriptions(path);
 		console.log('Found subscriptions', subscriptions);
 
-		_.each(subscriptions, (subscription) => {
-			_.each(subscription.sockets, (socket) => {
+		_.each(subscriptions, (subscription: Subscription) => {
+			_.each(subscription.sockets, (socket: Socket) => {
 				console.log('Notifying subscriber remove', socket.id, subscription.path);
 				socket.emit('remove', {
 					path: path
@@ -243,7 +243,7 @@ class DataBaseAdapter {
 
 		this.subscriptions = {};
 
-		_.each(oldSub, (subList, key) => {
+		_.each(oldSub, (subList: Subscription[], key) => {
 			// Remove all instances of "socket" from the subscription list
 			_.pull(subList, socket);
 
@@ -270,17 +270,16 @@ class DataBaseAdapter {
 
 	private getSubscriptions(path) {
 
-		return _.chain(this.subscriptions)
+		return _.filter(_.chain(this.subscriptions)
 			.map((sockets, path)=> {
 				return {
 					path: path,
 					sockets: sockets
 				}
 			})
-			.filter((sub: Subscription) => {
-				return (path.indexOf(sub.path) === 0 || sub.path.indexOf(path) === 0);
-			})
-			.value();
+			.value(), (sub: any) => {
+                return (path.indexOf(sub.path) === 0 || sub.path.indexOf(path) === 0);
+            });
 	}
 }
 

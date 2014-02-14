@@ -149,7 +149,7 @@ class InMemory implements Database.db {
 			return;
 		}
 
-		_.each(el.children, (child, key) => {
+		_.each(el.children, (child: any, key) => {
 //			if(!data.children) break;
 
 			if(!data.children[key]) {
